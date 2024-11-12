@@ -4,10 +4,11 @@ from library.utils import feature_selection
 from models.train import train_random_forest
 from evaluation.evaluate import evaluate_model
 from sklearn.model_selection import train_test_split
+from config import DATA_PATH 
 
 def main():
     # Define file path
-    data_path = '/Users/tejaskl/Documents/MLProject/HepatitisPrediction/data/HepatitisCdata.csv'
+    data_path = DATA_PATH
 
     # Load and preprocess data
     data = load_data(data_path)
