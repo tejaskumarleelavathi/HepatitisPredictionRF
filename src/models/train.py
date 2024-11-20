@@ -1,7 +1,13 @@
-import traceback
-from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+import numpy as np
+from sklearn.metrics import accuracy_score
+import traceback as tb
+from log.logger import get_logger
 
+
+# Configure the logger
+log = get_logger("train")  # Specify the log filename
 
 def train_random_forest(X_train, y_train):
     """
@@ -17,14 +23,20 @@ def train_random_forest(X_train, y_train):
     Raises:
     Exception: If an error occurs during model training or hyperparameter tuning.
     """
+    best_model_rnf = None
+
     try:
         # Initialize Random Forest classifier with a fixed random state
         clf_rnf = RandomForestClassifier(random_state=46)
         
-        # Define hyperparameter grid for tuning
+        # Define an expanded hyperparameter grid for tuning
         param_grid = {
-            'n_estimators': [3, 5, 7, 10],
-            'max_depth': [2, 3, 4, 5, 6]
+            'n_estimators': [int(x) for x in np.linspace(start=10, stop=80, num=10)],  # Number of trees in forest
+            'max_features': ['log2', 'sqrt'],  # Number of features to consider at every split
+            'max_depth': [2, 4],  # Maximum depth of the tree
+            'min_samples_split': [2, 5],  # Minimum number of samples required to split a node
+            'min_samples_leaf': [1, 2],  # Minimum number of samples required at each leaf node
+            'bootstrap': [True, False]  # Method of selecting samples for training each tree
         }
         
         # Set up GridSearchCV with 6-fold cross-validation
@@ -35,11 +47,13 @@ def train_random_forest(X_train, y_train):
         
         # Output the best parameters
         print("Best parameters:", grid_forest.best_params_)
-        
-        # Return the best estimator
+         
+        # Assign the best estimator
         best_model_rnf = grid_forest.best_estimator_
-        return best_model_rnf
+
     except Exception as e:
-        print(f"Error during Random Forest training with Grid Search: {e}")
-        traceback.print_exc()
-        return None
+        log.error(f"Error during Random Forest training with Grid Search: {e}")
+        log.error(tb.format_exc())  # Log the full traceback to the log file
+
+    return best_model_rnf
+

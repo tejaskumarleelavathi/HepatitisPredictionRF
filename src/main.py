@@ -22,10 +22,10 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     # Train Random Forest model
-    best_model_rnf = train_random_forest(X_train, y_train)
+    model_rnf = train_random_forest(X_train, y_train)
 
     # Evaluate the model
-    evaluate_model(best_model_rnf, X_test, y_test)
+    evaluate_model(model_rnf, X_train, y_train, X_test, y_test)
 
 if __name__ == "__main__":
     main()

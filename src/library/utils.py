@@ -2,10 +2,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import traceback
+import traceback as tb
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
+from log.logger import get_logger
+
+
+# Configure the logger
+log = get_logger("utils")  # Specify the log filename
 
 
 def load_data(file_path):
@@ -21,13 +26,17 @@ def load_data(file_path):
     Raises:
     Exception: If there is an error while reading the file.
     """
+
+    data = None
+    
     try:
         data = pd.read_csv(file_path)
-        return data
-    except Exception as e:
-        print(f"Error loading data from {file_path}: {e}")
-        traceback.print_exc()
-        return None
+        
+    except: # all the errors 
+        log.error(f"Error loading data from {file_path}: {e}")
+        log.error(tb.format_exc())
+    
+    return data
 
 
 def preprocess_data(data):
@@ -44,6 +53,9 @@ def preprocess_data(data):
     Raises:
     Exception: If an error occurs during preprocessing.
     """
+
+    preprocessed_data = None
+
     try:
         # Map 'Category' and 'Sex' columns to binary values
         data['Category'] = data['Category'].map({
@@ -72,12 +84,14 @@ def preprocess_data(data):
             'PROT': 'Protein Blood Test (PROT) g/L'
         }
         data.rename(columns=column_names, inplace=True)
+
+        preprocessed_data = data   # assigning the data to the returning  variable
         
-        return data
-    except Exception as e:
-        print(f"Error during data preprocessing: {e}")
-        traceback.print_exc()
-        return None
+    except:
+        log.error(f"Error during data preprocessing: {e}")
+        log.error(tb.format_exc())
+    
+    return preprocessed_data
 
 
 def feature_selection(data, num_features=11):
@@ -95,28 +109,35 @@ def feature_selection(data, num_features=11):
     Raises:
     Exception: If an error occurs during feature selection.
     """
+    selected_X = None
+    selected_y = None
+
     try:
         X = data.drop(["Category"], axis=1)
         y = data["Category"]
         
-        selector = SelectKBest(f_classif, k=num_features)
-        X_selected = selector.fit_transform(X, y)
+        selector = SelectKBest(f_classif, k=num_features)  # Select features based on ANOVA F-value
+        X_selected = selector.fit_transform(X, y)  # Returns the selected columns
         
-        selected_features = X.columns[selector.get_support()]
-        feature_scores = selector.scores_[selector.get_support()]
+        selected_features = X.columns[selector.get_support()]  # Gets the names of the selected columns
+        feature_scores = selector.scores_[selector.get_support()]  # Retrieves the F-values for selected features
 
         # Create DataFrame of feature scores
         feature_scores_df = pd.DataFrame({'Feature': selected_features, 'Score': feature_scores})
-        feature_scores_df = feature_scores_df.sort_values(by='Score', ascending=False)
-        
+        feature_scores_df = feature_scores_df.sort_values(by='Score', ascending=False)  # Sort features by score
+
         # Plot the feature scores
         plot_feature_scores(feature_scores_df)
-        
-        return X[selected_features], y
-    except Exception as e:
-        print(f"Error during feature selection: {e}")
-        traceback.print_exc()
-        return None, None
+
+        selected_X = X[selected_features]
+        selected_y = y
+
+    except:
+        log.error(f"Error during feature selection: {e}")
+        log.error(tb.format_exc())
+
+    return selected_X, selected_y
+
 
 
 def plot_feature_scores(feature_scores_df):
@@ -137,5 +158,5 @@ def plot_feature_scores(feature_scores_df):
         plt.ylabel('Features')
         plt.show()
     except Exception as e:
-        print(f"Error during feature score plotting: {e}")
-        traceback.print_exc()
+        log.error(f"Error during feature score plotting: {e}")
+        log.error(tb.format_exc())
