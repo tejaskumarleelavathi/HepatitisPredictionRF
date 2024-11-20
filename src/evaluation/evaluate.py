@@ -29,7 +29,6 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     try:
 
         # Calculate training accuracy
-        print("Test Size = 0.3, random state = 42")
         y_train_pred = model.predict(X_train)
         train_accuracy = accuracy_score(y_train, y_train_pred)
         print(f"Training Accuracy: {train_accuracy}")
