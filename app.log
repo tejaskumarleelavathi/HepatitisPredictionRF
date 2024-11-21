@@ -1,8 +1,0 @@
-2024-11-20 13:40:08,155 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
-2024-11-20 13:41:39,358 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
-2024-11-20 13:43:36,069 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
-2024-11-20 13:48:42,712 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
-2024-11-20 13:49:37,764 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
-2024-11-20 13:50:31,032 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
-2024-11-20 13:51:24,099 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
-2024-11-20 13:52:08,509 - utils - INFO - SMOTE applied. Class distribution after balancing: {0: 540, 1: 540}
