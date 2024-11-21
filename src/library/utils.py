@@ -16,17 +16,17 @@ log = get_logger("utils")  # Specify the log filename
 def load_data(file_path):
     """
     Load the dataset from a specified CSV file path.
-    
+
     Parameters:
     file_path (str): The path to the CSV file containing the dataset.
-    
+
     Returns:
     pd.DataFrame: A DataFrame containing the loaded data.
     """
     data = None
     try:
         data = pd.read_csv(file_path)
-    except:
+    except Exception as e:
         log.error(f"Error loading data from {file_path}: {e}")
         log.error(tb.format_exc())
     return data
@@ -34,12 +34,13 @@ def load_data(file_path):
 
 def preprocess_data(data):
     """
-    Preprocess the dataset by mapping categorical values, filling missing values, 
+    Preprocess the dataset by mapping categorical values, filling 
+    missing values, 
     and renaming columns for readability.
-    
+
     Parameters:
     data (pd.DataFrame): The input DataFrame to preprocess.
-    
+
     Returns:
     pd.DataFrame: A preprocessed DataFrame.
     """
@@ -54,10 +55,10 @@ def preprocess_data(data):
             '3=Cirrhosis': 1
         })
         data['Sex'] = data['Sex'].map({'m': 1, 'f': 0})
-        
+
         # Fill missing values with column medians
         data.fillna(data.median(), inplace=True)
-        
+
         # Rename columns for readability
         column_names = {
             'ALB': 'Albumin Blood Test (ALB) g/L',
@@ -74,7 +75,7 @@ def preprocess_data(data):
         data.rename(columns=column_names, inplace=True)
 
         preprocessed_data = data
-    except:
+    except Exception as e:
         log.error(f"Error during data preprocessing: {e}")
         log.error(tb.format_exc())
     return preprocessed_data
@@ -83,12 +84,12 @@ def preprocess_data(data):
 def balance_data_with_smote(data, k_neighbors=5, sampling_strategy="auto"):
     """
     Balance the dataset using SMOTE with custom parameters.
-    
+
     Parameters:
     data (pd.DataFrame): The preprocessed dataset.
     k_neighbors (int): Number of nearest neighbors to use for generating synthetic samples.
     sampling_strategy (str or float or dict): Strategy to determine the class distribution after oversampling.
-    
+
     Returns:
     pd.DataFrame, pd.Series: Balanced features (X) and target (y) datasets.
     """
@@ -97,36 +98,38 @@ def balance_data_with_smote(data, k_neighbors=5, sampling_strategy="auto"):
         # Separate features and target
         X = data.drop(["Category"], axis=1)
         y = data["Category"]
-        
+
         # Apply SMOTE with custom parameters
-        smote = SMOTE(random_state=42, k_neighbors=k_neighbors, sampling_strategy=sampling_strategy)
+        smote = SMOTE(random_state=42, k_neighbors=k_neighbors,
+                      sampling_strategy=sampling_strategy)
         balanced_X, balanced_y = smote.fit_resample(X, y)
 
-        log.info(f"SMOTE applied. Class distribution after balancing: {balanced_y.value_counts().to_dict()}")
+        log.info(f"SMOTE applied. Class distribution after balancing: {
+                 balanced_y.value_counts().to_dict()}")
     except Exception as e:
         log.error(f"Error during data balancing with SMOTE: {e}")
         log.error(tb.format_exc())
     return balanced_X, balanced_y
 
 
-
 def feature_selection_with_smote(data, num_features=11, k_neighbors=5, sampling_strategy="auto"):
     """
     Balance the dataset using SMOTE and perform feature selection using ANOVA F-values.
-    
+
     Parameters:
     data (pd.DataFrame): The input DataFrame.
     num_features (int): The number of top features to select.
     k_neighbors (int): Number of nearest neighbors to use for generating synthetic samples in SMOTE.
     sampling_strategy (str or float or dict): Strategy to determine the class distribution after oversampling.
-    
+
     Returns:
     pd.DataFrame, pd.Series: Balanced and selected features (X) and target (y).
     """
     selected_X, selected_y = None, None
     try:
         # Balance data with SMOTE
-        balanced_X, balanced_y = balance_data_with_smote(data, k_neighbors=k_neighbors, sampling_strategy=sampling_strategy)
+        balanced_X, balanced_y = balance_data_with_smote(
+            data, k_neighbors=k_neighbors, sampling_strategy=sampling_strategy)
 
         # Select features
         selector = SelectKBest(f_classif, k=num_features)
@@ -137,8 +140,10 @@ def feature_selection_with_smote(data, num_features=11, k_neighbors=5, sampling_
         feature_scores = selector.scores_[selector.get_support()]
 
         # Create a DataFrame of feature scores
-        feature_scores_df = pd.DataFrame({'Feature': selected_features, 'Score': feature_scores})
-        feature_scores_df = feature_scores_df.sort_values(by='Score', ascending=False)
+        feature_scores_df = pd.DataFrame(
+            {'Feature': selected_features, 'Score': feature_scores})
+        feature_scores_df = feature_scores_df.sort_values(
+            by='Score', ascending=False)
 
         # Plot the feature scores
         plot_feature_scores(feature_scores_df)
@@ -147,32 +152,30 @@ def feature_selection_with_smote(data, num_features=11, k_neighbors=5, sampling_
         selected_X = balanced_X[selected_features]
         selected_y = balanced_y
 
-    except:
+    except Exception as e:
         log.error(f"Error during feature selection with SMOTE: {e}")
         log.error(tb.format_exc())
-    
-    return selected_X, selected_y
 
+    return selected_X, selected_y
 
 
 def plot_feature_scores(feature_scores_df):
     """
     Plot the feature scores in a bar plot.
-    
+
     Parameters:
-    feature_scores_df (pd.DataFrame): A DataFrame containing features and their scores.
+    feature_scores_df (pd.DataFrame): A DataFrame containing
+    features and their scores.
     """
     try:
         plt.figure(figsize=(10, 6))
-        sns.barplot(x='Score', y='Feature', hue='Feature', data=feature_scores_df, palette='viridis', dodge=False, legend=False)
+        sns.barplot(x='Score', y='Feature', hue='Feature',
+                    data=feature_scores_df, palette='viridis',
+                    dodge=False, legend=False)
         plt.title('Feature Scores')
         plt.xlabel('Scores')
         plt.ylabel('Features')
         plt.show()
-    except:
+    except Exception as e:
         log.error(f"Error during feature score plotting: {e}")
         log.error(tb.format_exc())
-
-
-
-
